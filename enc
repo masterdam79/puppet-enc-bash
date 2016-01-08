@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Nice little fail function
+fail () {
+    echo '--- { }'
+    exit
+}
+
+# Get params
+NODE=$1
+
+# Get environment from hiera fed by YAML
+ENV=$(/opt/puppetlabs/bin/hiera environment ::fqdn=${NODE} -y /etc/puppetlabs/code/nodes/${NODE}.yaml --config /etc/puppetlabs/code/hiera-enc.yaml)
+
+# If environment variable exists and is not 'nil'
+if [[ "${ENV}" != "nil" && -n ${ENV} ]]
+then
+    # Echo YAML output
+    echo "---"
+    echo "environment: ${ENV}"
+else
+    # Call fail function
+    fail
+fi
