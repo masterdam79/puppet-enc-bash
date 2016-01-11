@@ -10,14 +10,23 @@ fail () {
 NODE=$1
 
 # Get environment from hiera fed by YAML
-ENV=$(/opt/puppetlabs/bin/hiera environment ::fqdn=${NODE} -y /etc/puppetlabs/code/nodes/${NODE}.yaml --config /etc/puppetlabs/code/hiera-enc.yaml)
+ENVIRONMENT=$(/opt/puppetlabs/bin/hiera environment ::fqdn=${NODE} -y /etc/puppetlabs/code/nodes/${NODE}.yaml --config /etc/puppetlabs/code/hiera-enc.yaml)
+CLASSES=$(/opt/puppetlabs/bin/hiera classes ::fqdn=${NODE} -y /etc/puppetlabs/code/nodes/${NODE}.yaml --config /etc/puppetlabs/code/hiera-enc.yaml | sed -r 's/(\[|\]|"|,)//g')
+
+# Echo YAML output
+echo "---"
+if [[ "${CLASSES}" != "nil" && -n ${CLASSES} ]]
+then
+    echo "classes:"
+    for CLASS in ${CLASSES}; do
+      echo "- ${CLASS}"
+    done
+fi
 
 # If environment variable exists and is not 'nil'
-if [[ "${ENV}" != "nil" && -n ${ENV} ]]
+if [[ "${ENVIRONMENT}" != "nil" && -n ${ENVIRONMENT} ]]
 then
-    # Echo YAML output
-    echo "---"
-    echo "environment: ${ENV}"
+    echo "environment: ${ENVIRONMENT}"
 else
     # Call fail function
     fail
